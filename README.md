@@ -25,14 +25,6 @@ The ultimate goal of this project is to create a robot that can interact with it
 - **Autonomous Navigation**: Moves towards identified objects in response to voice commands.
 - **NVIDIA Jetson Nano**: The hardware platform providing the necessary computational resources for real-time processing.
 
-## Getting Started
-
-To get started with the project, follow these steps:
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/captainflatbelly/yolov5od.git
-   cd yolov5od
 
 ## Getting Started
 
