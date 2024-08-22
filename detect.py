@@ -152,8 +152,7 @@ def run(
     """
 
     # CUSTOM VARS
-    search_object = "cell phone"
-    confidence_thres = 0.5
+    required_label = "person2"
 
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
@@ -323,12 +322,13 @@ def run(
 
 
                     # Assign a unique label for display (e.g., "person1", "person2")
-                    unique_label = f"{class_name}{instance_id}"
-                    annotator.box_label(coordinates, unique_label, color=colors(int(cls), True))
 
-                    if flag or (search_object == label and confidence >= confidence_thres):
-                            print(f"Index of {search_object} is {c}, Instance ID: {instance_details[id]}")
-                            flag = 1
+                    unique_label = f"{class_name}{instance_id}"
+                    if(unique_label == required_label):
+                        print("hello world")
+                        annotator.box_label(coordinates, unique_label, color=colors(int(cls), True))
+
+
 
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -336,15 +336,21 @@ def run(
                         with open(f"{txt_path}.txt", "a") as f:
                             f.write(("%g " * len(line)).rstrip() % line + "\n")
 
+                    #HKNKLWJDHKJKJNKJNFE
                     if save_img or save_crop or view_img:  # Add bbox to image
                         label_with_id = f"{unique_label}" if not hide_labels else None
-                        annotator.box_label(xyxy, label_with_id, color=colors(c, True))
+                        print("u " + unique_label)
+                        print("p "+required_label)
+                        if (unique_label == required_label):
+                            annotator.box_label(xyxy, label_with_id, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / label / f"{p.stem}_{unique_label}.jpg",
                                      BGR=True)
-            print("Class Instances for Frame:")
-            pprint.pprint(class_instances)
+            #print("Class Instances for Frame:")
+            #pprint.pprint(class_instances)
             # Stream results
+                    #print(required_label)
+                    #print(unique_label)
             im0 = annotator.result()
             if view_img:
                 if platform.system() == "Linux" and p not in windows:
@@ -373,8 +379,7 @@ def run(
                         save_path = str(Path(save_path).with_suffix(".mp4"))  # force *.mp4 suffix on results videos
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
                     vid_writer[i].write(im0)
-            # if not flag:
-            #     print(f"{search_object} not found")
+
 
         # Print time (inference-only)
         #LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
