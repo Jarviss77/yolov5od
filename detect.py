@@ -153,9 +153,9 @@ def run(
 
     # CUSTOM VARS
     required_label = "person2"
-    desired_class = "person"
+    desired_class = "potted plant"
     desired_direction = "left"
-    desired_index = 3
+    desired_index = 2
 
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
@@ -209,9 +209,13 @@ def run(
 
     def apply_bounding_box(object_class, direction, index, class_instances):
         instances = class_instances.get(object_class, [])
-
         if not instances:
             raise ValueError(f"No instances found for object class '{object_class}'")
+
+        # for printing all the classes
+        # for class_name in class_instances.keys():
+        #     for instance in class_instances[class_name]:
+        #         annotator.box_label(instance['coordinates'], f"{class_name}", color=colors(5, True))
 
         sorted_instances = sorted(instances, key=lambda x: x['coordinates'][0].item())
 
@@ -221,9 +225,8 @@ def run(
             target_instance = sorted_instances[-index]
         else:
             raise ValueError("Direction must be either 'left' or 'right'")
-
         coordinates = target_instance['coordinates']
-        unique_label = f"{class_name}{instance_id}"
+        unique_label = f"{desired_class}{instance_id}"
 
         annotator.box_label(coordinates, unique_label, color=colors(5, True))
 
@@ -293,9 +296,6 @@ def run(
         class_instance_counters = {}
         class_instances = {}
         for i, det in enumerate(pred):  # per image
-
-
-
             seen += 1
             frame_labels = []
 
@@ -324,9 +324,6 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-
-
-
                     c = int(cls)  # integer class
                     label = names[c] if hide_conf else f"{names[c]}"
                     class_name = names[int(cls)]  # Get class name
