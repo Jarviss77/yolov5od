@@ -153,6 +153,9 @@ def run(
 
     # CUSTOM VARS
     required_label = "person2"
+    desired_class = "person"
+    desired_direction = "left"
+    desired_index = 3
 
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
@@ -194,6 +197,35 @@ def run(
     # Initialize an empty list to store labels for each frame
 
     all_labels = []
+
+    #function to sort the object instances from left to right
+    def sort_by_tensor_coordinates(data):
+        for object_class, instances in data.items():
+            # Sort each list of instances by the 'coordinates' key
+            data[object_class] = sorted(
+                instances,
+                key=lambda x: x['coordinates'][0].item()
+            )
+
+    def apply_bounding_box(object_class, direction, index, class_instances):
+        instances = class_instances.get(object_class, [])
+
+        if not instances:
+            raise ValueError(f"No instances found for object class '{object_class}'")
+
+        sorted_instances = sorted(instances, key=lambda x: x['coordinates'][0].item())
+
+        if direction == 'left':
+            target_instance = sorted_instances[index - 1]
+        elif direction == 'right':
+            target_instance = sorted_instances[-index]
+        else:
+            raise ValueError("Direction must be either 'left' or 'right'")
+
+        coordinates = target_instance['coordinates']
+        unique_label = f"{class_name}{instance_id}"
+
+        annotator.box_label(coordinates, unique_label, color=colors(5, True))
 
     # Function to write the labels array to a CSV file
     def write_labels_to_csv(labels):
@@ -293,6 +325,8 @@ def run(
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
 
+
+
                     c = int(cls)  # integer class
                     label = names[c] if hide_conf else f"{names[c]}"
                     class_name = names[int(cls)]  # Get class name
@@ -320,13 +354,13 @@ def run(
                     class_instances[class_name].append(instance_details)
 
 
-
                     # Assign a unique label for display (e.g., "person1", "person2")
 
-                    unique_label = f"{class_name}{instance_id}"
-                    if(unique_label == required_label):
-                        print("hello world")
-                        annotator.box_label(coordinates, unique_label, color=colors(int(cls), True))
+                    # ASSIGNING BOUNDING BOX TO EVERY OBJECT AS IT COMES AND GOES
+                    # unique_label = f"{class_name}{instance_id}"
+                    # if(unique_label == required_label):
+                    #     print("hello world")
+                    #     #annotator.box_label(coordinates, unique_label, color=colors(int(cls), True))
 
 
 
@@ -336,21 +370,21 @@ def run(
                         with open(f"{txt_path}.txt", "a") as f:
                             f.write(("%g " * len(line)).rstrip() % line + "\n")
 
-                    #HKNKLWJDHKJKJNKJNFE
-                    if save_img or save_crop or view_img:  # Add bbox to image
-                        label_with_id = f"{unique_label}" if not hide_labels else None
-                        print("u " + unique_label)
-                        print("p "+required_label)
-                        if (unique_label == required_label):
-                            annotator.box_label(xyxy, label_with_id, color=colors(c, True))
+
+                    # if save_img or save_crop or view_img:  # Add bbox to image
+                    #     label_with_id = f"{unique_label}" if not hide_labels else None
+                    #     print("u " + unique_label)
+                    #     print("p "+required_label)
+                    #     if (unique_label == required_label):
+                    #         annotator.box_label(xyxy, label_with_id, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / label / f"{p.stem}_{unique_label}.jpg",
                                      BGR=True)
-            #print("Class Instances for Frame:")
-            #pprint.pprint(class_instances)
+
+            apply_bounding_box(desired_class, desired_direction, desired_index, class_instances)
+            print("Class Instances for Frame:")
+            pprint.pprint(class_instances)
             # Stream results
-                    #print(required_label)
-                    #print(unique_label)
             im0 = annotator.result()
             if view_img:
                 if platform.system() == "Linux" and p not in windows:
